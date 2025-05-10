@@ -1,0 +1,61 @@
+.
+├── ansible.cfg
+├── inventory.ini
+└── playbooks
+    └── postgresql.yaml
+
+1 directory, 3 files
+
+--- ./inventory.ini ---
+[postgresql]
+192.168.0.117 ansible_user=user ansible_ssh_private_key_file=~/.ssh/id_ed25519
+
+--- ./playbooks/postgresql.yaml ---
+- name: Install and run PostgreSQL in a container (bridge mode, idempotent)
+  hosts: postgresql
+  become: true
+  vars:
+    pg_user: kairos
+    pg_password: kairos
+    pgdata_path: /var/lib/postgresql/data/pgdata
+    pgdata_volume_path: /opt/postgres
+    pg_port: 15432
+
+  tasks:
+    - name: Stop and remove old PostgreSQL container
+      community.docker.docker_container:
+        name: postgres
+        state: absent
+        force_kill: true
+
+    - name: Remove PostgreSQL data directory
+      file:
+        path: "{{ pgdata_volume_path }}"
+        state: absent
+
+    - name: Recreate PostgreSQL data directory
+      file:
+        path: "{{ pgdata_volume_path }}"
+        state: directory
+        owner: root
+        group: root
+        mode: "0755"
+
+    - name: Run PostgreSQL 17 container
+      community.docker.docker_container:
+        name: postgres
+        image: postgres:17
+        restart_policy: always
+        published_ports:
+          - "{{ pg_port }}:5432"
+        env:
+          POSTGRES_USER: "{{ pg_user }}"
+          POSTGRES_PASSWORD: "{{ pg_password }}"
+          PGDATA: "{{ pgdata_path }}"
+        volumes:
+          - "{{ pgdata_volume_path }}:{{ pgdata_path }}"
+        state: started
+
+--- ./ansible.cfg ---
+[defaults]
+host_key_checking = False
