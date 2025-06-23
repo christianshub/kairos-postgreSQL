@@ -42,6 +42,5 @@ resource "proxmox_vm_qemu" "postgresql" {
   agent = 1
   onboot = true
 
-  # Assign a static IP
-  ipconfig0 = "ip=192.168.0.190/24,gw=192.168.0.1"
+  ipconfig0 = "ip=192.168.0.101/24,gw=192.168.0.1"
 }
