@@ -23,3 +23,7 @@ To access postgresql db do (from your local machine):
 docker run -it --rm postgres:17 psql -h 192.168.0.117 -p 15432 -U kairos -d postgres
 # Password for user kairos: kairos
 ```
+
+## ⚠️ Important Notes
+
+* After the VMs has been created its often possible to make the IP static through your routers network settings 
